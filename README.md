@@ -13,7 +13,7 @@
 1. Clone the repository
 
 ```bash
-git clone
+git clone github.com/nguyendhst/web-automation-testing
 ```
 
 2. Install dependencies
