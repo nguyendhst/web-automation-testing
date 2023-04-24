@@ -6,18 +6,24 @@
 
 - [Setup](#setup)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
+- [Workflow](#workflow)
 
 
 ## Setup
 
-1. Clone the repository
+1. Fork the repository & clone locally
 
 ```bash
-git clone github.com/nguyendhst/web-automation-testing
+git clone github.com/<uname>/web-automation-testing
 ```
 
-2. Install dependencies
+2. Add the main repository as a remote `upstream`:
+
+```bash
+git remote add upstream https://github.com/nguyendhst/web-automation-testing.git
+```
+
+3. Install dependencies
 
 >**Note:** Run `checks.sh` for a quick check of dependencies and installation
 
@@ -33,11 +39,33 @@ pip3 install -r requirements.txt
 ## Project Structure
 
 
-## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+## Workflow
 
+1. Pull the latest changes from `upstream`:
+
+```bash
+git pull upstream master
+```
+
+2. Create a new branch for your feature:
+
+```bash
+git checkout -b <feature-name>
+```
+
+3. Make your changes and commit them:
+
+```bash
+git add .
+
+git commit -m "Add some feature"
+```
+
+4. Push your changes to your fork:
+
+```bash
+git push origin <feature-name>
+```
+
+5. Create a pull request from your fork to the `upstream` repository
