@@ -25,6 +25,11 @@ git clone github.com/nguyendhst/web-automation-testing
 pip3 install -r requirements.txt
 ```
 
+- Install [ChromeDriver](https://chromedriver.chromium.org/downloads)
+	- MacOS: `brew install --cask chromedriver`
+	- Linux: `sudo apt-get install chromium-chromedriver`
+	- Windows: Download the latest version from [here](https://chromedriver.chromium.org/downloads) and add it to your PATH
+
 ## Project Structure
 
 
