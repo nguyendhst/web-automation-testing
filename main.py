@@ -7,7 +7,7 @@ import sys
 import time
 import datetime
 import subprocess
-from utils.Logger import Logger
+from utils.logger import Logger
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FEATURES_PATH = os.path.join(DIR_PATH, "features")

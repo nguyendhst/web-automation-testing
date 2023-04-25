@@ -9,10 +9,11 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from webdriver_manager.chrome import ChromeDriverManager
 
-import os
+import unittest
 import sys
-import time
-import datetime
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
+from rich_unittest import RichTestRunner
 
 
 # Set up the driver
@@ -37,8 +38,25 @@ password.send_keys(PASSWORD)
 login = driver.find_element(By.ID, "loginbtn")
 login.click()
 
-# Go to the calendar import page
-driver.get(FEATURE_URL)
 
-# Check that the page is correct
-assert "Import calendar" in driver.page_source
+class TestCalendarImport(unittest.TestCase):
+
+	def test_calendar_import(self):
+		# Go to the calendar import page
+		driver.get(FEATURE_URL)
+		# Check that the page is correct
+		self.assertTrue("Import calendar" in driver.page_source)
+
+	def test_calendar_import_ical(self):
+		# Go to the calendar import page
+		driver.get(FEATURE_URL)
+		# Check that the page is correct
+		self.assertTrue("Import caledar" in driver.page_source)
+		
+
+
+		
+
+if __name__ == "__main__":
+	suite = unittest.TestLoader().loadTestsFromTestCase(TestCalendarImport)
+	RichTestRunner().run(suite)
