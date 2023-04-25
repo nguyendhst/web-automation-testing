@@ -32,7 +32,7 @@ pip3 install -r requirements.txt
 ```
 
 - Install [ChromeDriver](https://chromedriver.chromium.org/downloads)
-	- MacOS: `brew install --cask chromedriver`
+	- MacOS: `brew install --cask chromedriver` and `brew upgrade chromedriver`
 	- Linux: `sudo apt-get install chromium-chromedriver`
 	- Windows: Download the latest version from [here](https://chromedriver.chromium.org/downloads) and add it to your PATH
 
