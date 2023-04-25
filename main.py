@@ -4,8 +4,6 @@
 
 import os
 import sys
-import time
-import datetime
 import subprocess
 from utils.logger import Logger
 from rich.panel import Panel
@@ -28,7 +26,7 @@ USAGE_STR = Panel(
 )
 
 
-class Tester:
+class TestRunner:
     def __init__(self):
         self.logger = Logger()
 
@@ -69,13 +67,15 @@ class Tester:
 
 
 def main():
-    tester = Tester()
+    tester = TestRunner()
     try:
         tester.start()
     except Exception as e:
         # if FileNotFoundError:
         if e.errno == 2:
-            tester.logger.log("Feature not found", "error")
+            tester.logger.log("Bad test path", "error")
+            tester.logger.log("Test run failed", "error")
+ 
             print(USAGE_STR)
         else:
             tester.logger.log(e, "exception")
