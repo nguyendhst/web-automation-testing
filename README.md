@@ -36,6 +36,11 @@ pip3 install -r requirements.txt
 	- Linux: `sudo apt-get install chromium-chromedriver`
 	- Windows: Download the latest version from [here](https://chromedriver.chromium.org/downloads) and add it to your PATH
 
+>**Note** If you are using a different browser, you can find the corresponding driver [here](https://www.selenium.dev/documentation/en/webdriver/driver_requirements/)
+
+>**Note** The chrome driver version should match the version of your chrome browser. You can check the version of your chrome browser by going to `chrome://version/`
+
+
 ## Project Structure
 
 
