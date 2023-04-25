@@ -43,7 +43,12 @@ pip3 install -r requirements.txt
 
 ## Project Structure
 
+### Run test scripts from `main.py`
+```bash
+python3 main.py <feature-name> <mode>
 
+Example: python3 main.py calendar-import non-data-driven
+```
 
 ## Workflow
 
