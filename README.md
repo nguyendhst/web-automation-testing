@@ -6,6 +6,7 @@
 
 - [Setup](#setup)
 - [Project Structure](#project-structure)
+- [How to run test scripts](#how-to-run-test-scripts)
 - [Workflow](#workflow)
 
 
@@ -43,6 +44,11 @@ pip3 install -r requirements.txt
 
 ## Project Structure
 
+1. The `features` folder contains the test scripts
+2. The `utils` folder contains the helper functions
+3. The `main.py` file is the entry point for the test scripts
+
+## How to run test scripts
 ### Run test scripts from `main.py`
 ```bash
 python3 main.py <feature-name> <mode>
