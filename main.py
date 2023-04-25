@@ -8,9 +8,24 @@ import time
 import datetime
 import subprocess
 from utils.logger import Logger
+from rich.panel import Panel
+from rich import print
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FEATURES_PATH = os.path.join(DIR_PATH, "features")
+
+USAGE_STR = Panel(
+    r"""
+    Usage: python3 main.py <feature-name> <type>
+
+    - feature-name: The name of the feature to test
+    - type: The type of test to run (data-driven or non-data-driven)
+    """,
+    title="Info",
+    title_align="left",
+    expand=True,
+    style="green",
+)
 
 
 class Tester:
@@ -32,12 +47,12 @@ class Tester:
     def run_script(self, feature_name, type, script_name):
         script = self.get_script(feature_name, type, script_name)
         subprocess.run(["python3", script])
-        
+
     def start(self):
         self.logger.log("Starting test run", "info")
         self.logger.log("Feature: {}".format(sys.argv[1]), "info")
         self.logger.log("Type: {}".format(sys.argv[2]), "info")
-        #self.logger.log("Script: {}".format(sys.argv[3]))
+        # self.logger.log("Script: {}".format(sys.argv[3]))
 
         scripts = self.get_script_list(sys.argv[1], sys.argv[2])
         self.logger.log("Scripts: {}".format(scripts), "info")
@@ -53,11 +68,24 @@ class Tester:
         self.logger.log("Test run complete", "info")
 
 
-
 def main():
     tester = Tester()
-    tester.start()
+    try:
+        tester.start()
+    except Exception as e:
+        # if FileNotFoundError:
+        if e.errno == 2:
+            tester.logger.log("Feature not found", "error")
+            print(USAGE_STR)
+        else:
+            tester.logger.log(e, "exception")
+            tester.logger.log("Test run failed", "error")
 
 
 if __name__ == "__main__":
     main()
+
+
+# TODO:
+# - Add support for running all features tests
+# - Move webdriver setup to global
