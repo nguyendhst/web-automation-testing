@@ -59,11 +59,11 @@ class TestRunner:
             try:
                 self.run_script(sys.argv[1], sys.argv[2], script)
             except Exception as e:
-                self.logger.log(e, "exception")
+                self.logger.log(e, "error")
                 self.logger.log("Test run failed", "error")
                 return
 
-        self.logger.log("Test run complete", "info")
+        self.logger.log("Test run completed!", "info")
 
 
 def main():
@@ -78,7 +78,7 @@ def main():
  
             print(USAGE_STR)
         else:
-            tester.logger.log(e, "exception")
+            tester.logger.log(e, "error")
             tester.logger.log("Test run failed", "error")
 
 

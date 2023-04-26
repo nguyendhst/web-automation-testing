@@ -26,7 +26,7 @@ git remote add upstream https://github.com/nguyendhst/web-automation-testing.git
 
 3. Install dependencies
 
->**Note:** Run `checks.sh` for a quick check of dependencies and installation
+>**Note** Run `checks.sh` for a quick check of dependencies and installation
 
 ```bash
 pip3 install -r requirements.txt
