@@ -6,12 +6,17 @@ import os
 import sys
 import subprocess
 from utils.logger import Logger
+
+# refresh dependencies -- supress output
+# subprocess.run(["pip3", "install", "-r", "requirements.txt"], stdout=subprocess.DEVNULL)
+
+
+# import rich modules
 from rich.panel import Panel
-from rich.progress import Progress, BarColumn, TimeRemainingColumn, SpinnerColumn
-from rich.traceback import install
+#from rich.traceback import install
 from rich import print
 
-install()
+#install()
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FEATURES_PATH = os.path.join(DIR_PATH, "features")
@@ -22,6 +27,8 @@ USAGE_STR = Panel(
 
     - feature-name: The name of the feature to test
     - type: The type of test to run (data-driven or non-data-driven)
+
+    Example: python3 main.py calendar-import non-data-driven
     """,
     title="Info",
     title_align="left",
@@ -29,7 +36,15 @@ USAGE_STR = Panel(
     style="green",
 )
 
-class FeatureTree():
+
+class FeatureTree:
+    """A data structure which maps all features, types, and scripts
+
+    Attributes:
+    - tree (dict): A tree of features, types, and scripts
+
+    """
+
     def __init__(self):
         self.tree = {}
         self.build_feature_tree()
@@ -49,50 +64,47 @@ class FeatureTree():
 
     def get_feature_tree(self):
         return self.tree
-    
+
     def get_feature_list(self):
         return list(self.tree.keys())
-    
+
     def get_type_list(self, feature):
         return list(self.tree[feature].keys())
-    
+
     def get_script_list(self, feature, type):
         return self.tree[feature][type]
 
 
-
 class TestRunner:
+    """A class to manage running test scripts
+
+    Attributes:
+    - logger (Logger): A logger instance
+    - feature_tree (FeatureTree): A feature tree
+    - feature (str): The name of the feature to test
+    - type (str): The type of test to run (data-driven or non-data-driven)
+    """
+
     def __init__(self):
         self.logger = Logger()
-        self.progress = Progress(
-            SpinnerColumn(),
-            "[progress.description]{task.description}",
-            "[progress.filesize]{task.fields[script]}",
-            BarColumn(),
-            "[progress.filesize]{task.fields[feature]}",
-            BarColumn(),
-            "[progress.filesize]{task.fields[type]}",
-            BarColumn(),
-            "•",
-            TimeRemainingColumn(),
-        )
+        self.feature_tree = FeatureTree()
         self.feature = None
         self.type = None
 
     def get_feature_path(self, feature_name, type):
-        return os.path.join(FEATURES_PATH, feature_name, type)
+        return os.path.join(FEATURES_PATH, feature_name, self.type)
 
     def get_script_path(self, feature_name, type, script_name):
-        return os.path.join(self.get_feature_path(feature_name, type), script_name)
+        return os.path.join(self.get_feature_path(feature_name, self.type), script_name)
 
     def get_script_list(self, feature_name, type):
-        return os.listdir(self.get_feature_path(feature_name, type))
+        return os.listdir(self.get_feature_path(feature_name, self.type))
 
     def get_script(self, feature_name, type, script_name):
-        return self.get_script_path(feature_name, type, script_name)
+        return self.get_script_path(feature_name, self.type, script_name)
 
     def run_script(self, feature_name, type, script_name):
-        script = self.get_script(feature_name, type, script_name)
+        script = self.get_script(feature_name, self.type, script_name)
         subprocess.run(["python3", script])
 
     def start(self):
@@ -103,15 +115,16 @@ class TestRunner:
         self.feature = sys.argv[1]
         self.type = sys.argv[2]
 
-        if type not in ["data-driven", "non-data-driven"]:
+        if self.type not in ["data-driven", "non-data-driven"]:
+            self.logger.log("Bad test type", "error")
+            sys.exit(1)
+
+        if not os.path.exists(self.get_feature_path(self.feature, self.type)):
+            self.logger.log("Bad test path", "error")
             print(USAGE_STR)
             sys.exit(1)
 
-        if not os.path.exists(self.get_feature_path(self.feature, type)):
-            print(USAGE_STR)
-            sys.exit(1)
-
-        script_list = self.get_script_list(self.feature, type)
+        script_list = self.get_script_list(self.feature, self.type)
 
         if len(script_list) == 0:
             self.logger.log("No scripts found", "error")
@@ -122,18 +135,11 @@ class TestRunner:
         self.logger.log(f"Feature: {self.feature}", "info")
         self.logger.log(f"Type: {self.type}", "info")
 
-        with self.progress:
-            task = self.progress.add_task(
-                "Running tests...",
-                total=len(script_list),
-                feature=self.feature,
-                type=self.type,
-            )
+        for script in script_list:
+            self.logger.log(f"Running script: {script}", "info")
+            self.run_script(self.feature, self.type, script)
 
-            for script_name in script_list:
-                self.progress.update(task, script=script_name)
-                self.run_script(self.feature, type, script_name)
-                self.progress.advance(task)
+        self.logger.log("Test run complete", "info")
 
 
 def main():
@@ -141,12 +147,16 @@ def main():
     try:
         tester.start()
     except Exception as e:
-        # if FileNotFoundError:
-        if e.errno == 2:
-            tester.logger.log("Bad test path", "error")
-            tester.logger.log("Test run failed", "error")
+        if hasattr(e, "errno"):
+            # if FileNotFoundError:
+            if e.errno == 2:
+                tester.logger.log("Bad test path", "error")
+                tester.logger.log("Test run failed", "error")
 
-            print(USAGE_STR)
+                print(USAGE_STR)
+            else:
+                tester.logger.log(e, "error")
+                tester.logger.log("Test run failed", "error")
         else:
             tester.logger.log(e, "error")
             tester.logger.log("Test run failed", "error")

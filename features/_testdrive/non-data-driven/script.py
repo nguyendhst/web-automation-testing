@@ -1,4 +1,3 @@
-
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -25,23 +24,32 @@ from logger import Logger
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 driver.implicitly_wait(10)
 
+# Set preferred log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+LOG_LV = "DEBUG"
+logger = Logger(LOG_LV)
+
 # Open the page
 LOGIN_URL = "https://sandbox.moodledemo.net/login/index.php"
 USERNAME = "admin"
 PASSWORD = "sandbox"
-ICS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "calendar.ics"))
 
 driver.get(LOGIN_URL)
 
 # Log in
 username = driver.find_element(By.ID, "username")
-username.send_keys(USERNAME)
-
 password = driver.find_element(By.ID, "password")
-password.send_keys(PASSWORD)
-
 login = driver.find_element(By.ID, "loginbtn")
-login.click()
+
+ActionChains.move_to_element(username) \
+    .click() \
+    .send_keys(USERNAME) \
+    .move_to_element(password) \
+    .click() \
+    .send_keys(PASSWORD) \
+    .move_to_element(login) \
+    .click() \
+    .perform()
 
 # if login failed, exit
 
@@ -61,16 +69,17 @@ if "Available courses" not in driver.page_source:
     print(LOGIN_ERR)
     sys.exit(1)
 
+
+# END OF TEMPLATE -- CREATE YOUR OWN CLASS
 class TestDrive(unittest.TestCase):
-    
     @classmethod
     def setUpClass(cls):
         cls.driver = driver
-        cls.logger = Logger()
-    
-    def test_drive(self):
+        cls.logger = logger
 
-        self.assertTrue("Available courses" in driver.page_source)
+    def test_drive(self):
+        self.assertTrue("Available courses" in self.driver.page_source)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestDrive)
