@@ -4,11 +4,15 @@
 
 ## Table of Contents
 
+- [Design Philosophy](#design-philosophy)
 - [Setup](#setup)
 - [Project Structure](#project-structure)
 - [How to run test scripts](#how-to-run-test-scripts)
 - [Workflow](#workflow)
 
+## Design Philosophy
+
+- The test scripts are structured in a way so that they can be run separately by executing `python3 script.py` in their respective folders or together through the `main.py` file.
 
 ## Setup
 
