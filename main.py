@@ -37,7 +37,7 @@ USAGE_STR = Panel(
 )
 
 
-class FeatureTree:
+class FileTree:
     """A data structure which maps all features, types, and scripts
 
     Attributes:
@@ -47,9 +47,9 @@ class FeatureTree:
 
     def __init__(self):
         self.tree = {}
-        self.build_feature_tree()
+        self.build_file_tree()
 
-    def build_feature_tree(self):
+    def build_file_tree(self):
         # iterate through features folder
         # for each feature, iterate through data-driven and non-data-driven folders
         # for each folder, iterate through scripts
@@ -62,10 +62,10 @@ class FeatureTree:
                 for script in os.listdir(os.path.join(FEATURES_PATH, feature, type)):
                     self.tree[feature][type].append(script)
 
-    def get_feature_tree(self):
+    def get_file_tree(self):
         return self.tree
 
-    def get_feature_list(self):
+    def get_file_list(self):
         return list(self.tree.keys())
 
     def get_type_list(self, feature):
@@ -74,34 +74,65 @@ class FeatureTree:
     def get_script_list(self, feature, type):
         return self.tree[feature][type]
 
+    def print_file_tree(self):
+        print(self.tree)
+
 
 class TestRunner:
     """A class to manage running test scripts
 
     Attributes:
     - logger (Logger): A logger instance
-    - feature_tree (FeatureTree): A feature tree
+    - file_tree (FeatureTree): A feature tree
     - feature (str): The name of the feature to test
     - type (str): The type of test to run (data-driven or non-data-driven)
     """
 
     def __init__(self):
         self.logger = Logger()
-        self.feature_tree = FeatureTree()
+        self.file_tree = FileTree()
         self.feature = None
         self.type = None
 
     def get_feature_path(self, feature_name, type):
-        return os.path.join(FEATURES_PATH, feature_name, self.type)
+        #return os.path.join(FEATURES_PATH, feature_name, self.type)
+        for feature in self.file_tree.get_file_list():
+            if feature == feature_name:
+                for type in self.file_tree.get_type_list(feature):
+                    if type == self.type:
+                        return os.path.join(FEATURES_PATH, feature, type)
+        return None
 
     def get_script_path(self, feature_name, type, script_name):
-        return os.path.join(self.get_feature_path(feature_name, self.type), script_name)
+        #return os.path.join(self.get_feature_path( feature_name, self.type), script_name)
+        for feature in self.file_tree.get_file_list():
+            if feature == feature_name:
+                for type in self.file_tree.get_type_list(feature):
+                    if type == self.type:
+                        for script in self.file_tree.get_script_list(feature, type):
+                            if script == script_name:
+                                return os.path.join(FEATURES_PATH, feature, type, script)
+        return None
 
     def get_script_list(self, feature_name, type):
-        return os.listdir(self.get_feature_path(feature_name, self.type))
+        #return os.listdir(self.get_feature_path(feature_name, self.type))
+        for feature in self.file_tree.get_file_list():
+            if feature == feature_name:
+                for type in self.file_tree.get_type_list(feature):
+                    if type == self.type:
+                        return self.file_tree.get_script_list(feature, type)
+        return None
 
     def get_script(self, feature_name, type, script_name):
-        return self.get_script_path(feature_name, self.type, script_name)
+        #return self.get_script_path(feature_name, self.type, script_name)
+        for feature in self.file_tree.get_file_list():
+            if feature == feature_name:
+                for type in self.file_tree.get_type_list(feature):
+                    if type == self.type:
+                        for script in self.file_tree.get_script_list(feature, type):
+                            if script == script_name:
+                                return self.get_script_path(feature_name, self.type, script_name)
+        return None
 
     def run_script(self, feature_name, type, script_name):
         script = self.get_script(feature_name, self.type, script_name)
@@ -119,12 +150,16 @@ class TestRunner:
             self.logger.log("Bad test type", "error")
             sys.exit(1)
 
-        if not os.path.exists(self.get_feature_path(self.feature, self.type)):
+        if not self.get_feature_path(self.feature, self.type):
             self.logger.log("Bad test path", "error")
             print(USAGE_STR)
             sys.exit(1)
 
         script_list = self.get_script_list(self.feature, self.type)
+        if script_list is None:
+            self.logger.log("Bad test path", "error")
+            print(USAGE_STR)
+            sys.exit(1)
 
         if len(script_list) == 0:
             self.logger.log("No scripts found", "error")
@@ -144,6 +179,7 @@ class TestRunner:
 
 def main():
     tester = TestRunner()
+    #tester.file_tree.print_file_tree()
     try:
         tester.start()
     except Exception as e:
