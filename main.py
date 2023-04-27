@@ -7,7 +7,11 @@ import sys
 import subprocess
 from utils.logger import Logger
 from rich.panel import Panel
+from rich.progress import Progress, BarColumn, TimeRemainingColumn, SpinnerColumn
+from rich.traceback import install
 from rich import print
+
+install()
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FEATURES_PATH = os.path.join(DIR_PATH, "features")
@@ -25,10 +29,55 @@ USAGE_STR = Panel(
     style="green",
 )
 
+class FeatureTree():
+    def __init__(self):
+        self.tree = {}
+        self.build_feature_tree()
+
+    def build_feature_tree(self):
+        # iterate through features folder
+        # for each feature, iterate through data-driven and non-data-driven folders
+        # for each folder, iterate through scripts
+        # build a tree of features, types, and scripts
+
+        for feature in os.listdir(FEATURES_PATH):
+            self.tree[feature] = {}
+            for type in os.listdir(os.path.join(FEATURES_PATH, feature)):
+                self.tree[feature][type] = []
+                for script in os.listdir(os.path.join(FEATURES_PATH, feature, type)):
+                    self.tree[feature][type].append(script)
+
+    def get_feature_tree(self):
+        return self.tree
+    
+    def get_feature_list(self):
+        return list(self.tree.keys())
+    
+    def get_type_list(self, feature):
+        return list(self.tree[feature].keys())
+    
+    def get_script_list(self, feature, type):
+        return self.tree[feature][type]
+
+
 
 class TestRunner:
     def __init__(self):
         self.logger = Logger()
+        self.progress = Progress(
+            SpinnerColumn(),
+            "[progress.description]{task.description}",
+            "[progress.filesize]{task.fields[script]}",
+            BarColumn(),
+            "[progress.filesize]{task.fields[feature]}",
+            BarColumn(),
+            "[progress.filesize]{task.fields[type]}",
+            BarColumn(),
+            "•",
+            TimeRemainingColumn(),
+        )
+        self.feature = None
+        self.type = None
 
     def get_feature_path(self, feature_name, type):
         return os.path.join(FEATURES_PATH, feature_name, type)
@@ -47,23 +96,44 @@ class TestRunner:
         subprocess.run(["python3", script])
 
     def start(self):
+        if len(sys.argv) != 3:
+            print(USAGE_STR)
+            sys.exit(1)
+
+        self.feature = sys.argv[1]
+        self.type = sys.argv[2]
+
+        if type not in ["data-driven", "non-data-driven"]:
+            print(USAGE_STR)
+            sys.exit(1)
+
+        if not os.path.exists(self.get_feature_path(self.feature, type)):
+            print(USAGE_STR)
+            sys.exit(1)
+
+        script_list = self.get_script_list(self.feature, type)
+
+        if len(script_list) == 0:
+            self.logger.log("No scripts found", "error")
+            self.logger.log("Test run failed", "error")
+            sys.exit(1)
+
         self.logger.log("Starting test run", "info")
-        self.logger.log("Feature: {}".format(sys.argv[1]), "info")
-        self.logger.log("Type: {}".format(sys.argv[2]), "info")
-        # self.logger.log("Script: {}".format(sys.argv[3]))
+        self.logger.log(f"Feature: {self.feature}", "info")
+        self.logger.log(f"Type: {self.type}", "info")
 
-        scripts = self.get_script_list(sys.argv[1], sys.argv[2])
-        self.logger.log("Scripts: {}".format(scripts), "info")
+        with self.progress:
+            task = self.progress.add_task(
+                "Running tests...",
+                total=len(script_list),
+                feature=self.feature,
+                type=self.type,
+            )
 
-        for script in scripts:
-            try:
-                self.run_script(sys.argv[1], sys.argv[2], script)
-            except Exception as e:
-                self.logger.log(e, "error")
-                self.logger.log("Test run failed", "error")
-                return
-
-        self.logger.log("Test run completed!", "info")
+            for script_name in script_list:
+                self.progress.update(task, script=script_name)
+                self.run_script(self.feature, type, script_name)
+                self.progress.advance(task)
 
 
 def main():
@@ -75,7 +145,7 @@ def main():
         if e.errno == 2:
             tester.logger.log("Bad test path", "error")
             tester.logger.log("Test run failed", "error")
- 
+
             print(USAGE_STR)
         else:
             tester.logger.log(e, "error")
