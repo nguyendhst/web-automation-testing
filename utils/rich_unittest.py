@@ -19,7 +19,7 @@ class RichTestResult(unittest.TextTestResult):
             for test, err in self.errors + self.failures:
                 table.add_row(
                     test.shortDescription() or str(test),
-                    Panel(err, title="Exception", expand=False),
+                    Panel(err, title="Error", expand=False),
                 )
 
             console.print(table)
