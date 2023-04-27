@@ -77,6 +77,9 @@ class TestDrive(unittest.TestCase):
             print(LOGIN_ERR)
             sys.exit(1)
 
+
+
+    # TEST CASES
     def test_drive(self):
         self.assertTrue("Available courses" in self.driver.page_source)
 
