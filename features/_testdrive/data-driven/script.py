@@ -50,7 +50,7 @@ class TestDrive(unittest.TestCase):
         cls.logger = logger
 
     def setUp(self):
-        """setUp runs before every test case.
+        """setUp runs before each test case run.
         This is where you set up any data needed for the tests.
         """
         pass
