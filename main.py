@@ -141,8 +141,8 @@ class TestRunner:
                                 )
         return None
 
-    def run_script(self, feature_name, type, script_name):
-        script = self.get_script(feature_name, self.type, script_name)
+    def run_script(self, script_name):
+        script = self.get_script(self.feature_name, self.type, script_name)
         subprocess.run(["python3", script])
 
     def start(self):
@@ -180,7 +180,7 @@ class TestRunner:
         for script in script_list:
             # run only files with *.py extension
             self.logger.log(f"Running script: {script}", "info")
-            self.run_script(self.feature, self.type, script)
+            self.run_script(script)
 
         self.logger.log("Test run complete", "info")
 
