@@ -171,8 +171,10 @@ class TestRunner:
         self.logger.log(f"Type: {self.type}", "info")
 
         for script in script_list:
-            self.logger.log(f"Running script: {script}", "info")
-            self.run_script(self.feature, self.type, script)
+            # run only files with *.py extension
+            if script.endswith(".py"):
+                self.logger.log(f"Running script: {script}", "info")
+                self.run_script(self.feature, self.type, script)
 
         self.logger.log("Test run complete", "info")
 
