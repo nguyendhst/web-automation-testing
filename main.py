@@ -61,7 +61,9 @@ class FileTree:
             for type in os.listdir(os.path.join(FEATURES_PATH, feature)):
                 self.tree[feature][type] = []
                 for script in os.listdir(os.path.join(FEATURES_PATH, feature, type)):
-                    self.tree[feature][type].append(script)
+                    self.tree[feature][type].append(script) if script.endswith(
+                        ".py"
+                    ) else None
 
     def get_file_tree(self):
         return self.tree
@@ -177,9 +179,8 @@ class TestRunner:
 
         for script in script_list:
             # run only files with *.py extension
-            if script.endswith(".py"):
-                self.logger.log(f"Running script: {script}", "info")
-                self.run_script(self.feature, self.type, script)
+            self.logger.log(f"Running script: {script}", "info")
+            self.run_script(self.feature, self.type, script)
 
         self.logger.log("Test run complete", "info")
 
