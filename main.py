@@ -13,10 +13,11 @@ from utils.logger import Logger
 
 # import rich modules
 from rich.panel import Panel
-#from rich.traceback import install
+
+# from rich.traceback import install
 from rich import print
 
-#install()
+# install()
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FEATURES_PATH = os.path.join(DIR_PATH, "features")
@@ -95,7 +96,7 @@ class TestRunner:
         self.type = None
 
     def get_feature_path(self, feature_name, type):
-        #return os.path.join(FEATURES_PATH, feature_name, self.type)
+        # return os.path.join(FEATURES_PATH, feature_name, self.type)
         for feature in self.file_tree.get_file_list():
             if feature == feature_name:
                 for type in self.file_tree.get_type_list(feature):
@@ -104,18 +105,20 @@ class TestRunner:
         return None
 
     def get_script_path(self, feature_name, type, script_name):
-        #return os.path.join(self.get_feature_path( feature_name, self.type), script_name)
+        # return os.path.join(self.get_feature_path( feature_name, self.type), script_name)
         for feature in self.file_tree.get_file_list():
             if feature == feature_name:
                 for type in self.file_tree.get_type_list(feature):
                     if type == self.type:
                         for script in self.file_tree.get_script_list(feature, type):
                             if script == script_name:
-                                return os.path.join(FEATURES_PATH, feature, type, script)
+                                return os.path.join(
+                                    FEATURES_PATH, feature, type, script
+                                )
         return None
 
     def get_script_list(self, feature_name, type):
-        #return os.listdir(self.get_feature_path(feature_name, self.type))
+        # return os.listdir(self.get_feature_path(feature_name, self.type))
         for feature in self.file_tree.get_file_list():
             if feature == feature_name:
                 for type in self.file_tree.get_type_list(feature):
@@ -124,14 +127,16 @@ class TestRunner:
         return None
 
     def get_script(self, feature_name, type, script_name):
-        #return self.get_script_path(feature_name, self.type, script_name)
+        # return self.get_script_path(feature_name, self.type, script_name)
         for feature in self.file_tree.get_file_list():
             if feature == feature_name:
                 for type in self.file_tree.get_type_list(feature):
                     if type == self.type:
                         for script in self.file_tree.get_script_list(feature, type):
                             if script == script_name:
-                                return self.get_script_path(feature_name, self.type, script_name)
+                                return self.get_script_path(
+                                    feature_name, self.type, script_name
+                                )
         return None
 
     def run_script(self, feature_name, type, script_name):
@@ -181,7 +186,7 @@ class TestRunner:
 
 def main():
     tester = TestRunner()
-    #tester.file_tree.print_file_tree()
+    # tester.file_tree.print_file_tree()
     try:
         tester.start()
     except Exception as e:
