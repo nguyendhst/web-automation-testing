@@ -81,6 +81,12 @@ class TestCalendarImport(unittest.TestCase):
             print(LOGIN_ERR)
             sys.exit(1)
 
+    def setUp(self):
+        """setUp runs before every test case.
+        This is where you set up any data needed for the tests.
+        """
+        pass
+        
     def test_calendar_normalflow(self):
         """
         Calendar Import Normal Flow
