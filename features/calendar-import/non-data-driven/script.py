@@ -118,7 +118,7 @@ class TestCalendarImport(unittest.TestCase):
         import_button.click()
 
         # Check if successfully redirected to the manage calendars page
-        self.assertTrue("Import or export calendars" in self.driver.page_source)
+        self.assertTrue("events were imported" in self.driver.page_source)
 
     def test_calendar_alt1(self):
         """

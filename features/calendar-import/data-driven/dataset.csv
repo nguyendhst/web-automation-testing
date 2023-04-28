@@ -1,0 +1,11 @@
+calendar_name,url,file,expected
+Test Normal Flow,https://www.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics,,success
+Test Empty URL Valid Name,,,failure
+,,,failure
+Test Invalid URL,google.com,,failure
+,google.com,,failure
+,https://www.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics,,failure
+Test Alt Flow,,calendar.ics,success
+Test Bad File,,yolo.json,failure
+,,yolo.json,failure
+,,calendar.ics,failure
