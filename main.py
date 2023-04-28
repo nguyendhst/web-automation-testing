@@ -142,7 +142,7 @@ class TestRunner:
         return None
 
     def run_script(self, script_name):
-        script = self.get_script(self.feature_name, self.type, script_name)
+        script = self.get_script(self.feature, self.type, script_name)
         subprocess.run(["python3", script])
 
     def start(self):
