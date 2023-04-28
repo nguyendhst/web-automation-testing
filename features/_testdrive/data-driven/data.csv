@@ -1,0 +1,5 @@
+username,password,expected
+admin,sandbox,success
+student,sandbox,success
+admin,badpassword,failure
+當愛已成往事,123456,failure
