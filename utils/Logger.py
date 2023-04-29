@@ -5,20 +5,19 @@ import logging
 from rich.logging import RichHandler
 
 
-logging.basicConfig(
-    level="NOTSET",
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[RichHandler(rich_tracebacks=True)]
-)
-
-
-
 class Logger:
-    def __init__(self):
+    def __init__(self, level="NOTSET"):
         self.console = Console()
         self.logger = logging.getLogger("rich")
+
+        logging.basicConfig(
+            level=level,
+            format="%(message)s",
+            datefmt="[%X]",
+            handlers=[RichHandler(rich_tracebacks=True)],
+        )
         install()
+
 
     def log(self, message, level):
         if level == "info":
@@ -75,4 +74,3 @@ class Logger:
             self.logger.debug(Panel(message, title="Traceback", expand=False))
         elif level == "trace":
             self.logger.trace(Panel(message, title="Traceback", expand=False))
-    
