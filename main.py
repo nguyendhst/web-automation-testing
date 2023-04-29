@@ -5,7 +5,7 @@
 import os
 import sys
 import subprocess
-from utils.logger import Logger
+from utils.Logger import Logger
 from rich.panel import Panel
 from rich import print
 
