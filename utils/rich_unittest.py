@@ -14,7 +14,7 @@ class RichTestResult(unittest.TextTestResult):
             console = Console()
             table = Table(title="Test Failures and Errors", style="red")
             table.add_column("Test Case")
-            table.add_column("Error")
+            table.add_column("Error") if self.errors else table.add_column("Failure")
 
             for test, err in self.errors + self.failures:
                 table.add_row(
