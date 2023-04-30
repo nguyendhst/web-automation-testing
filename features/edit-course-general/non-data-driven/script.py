@@ -48,98 +48,118 @@ login.click()
 
 class TestEditCourseGeneral(unittest.TestCase):
     def getElements(self):
-        # C1: điều kiện Course full name (full_name_field) đã được nhập.
-        # C2: điều kiện Course short name (short_name_field) đã được nhập.
-        # C3: điều kiện Course category đã được nhập.
-        if hasattr(self, 'full_name_field'):
-            return (self.full_name_field, self.short_name_field, self.submit_btn, self.badge_btn)
-        
         driver.get(FEATURE_URL)
-        self.full_name_field = driver.find_elements(By.CSS_SELECTOR, "input")[21]
-        self.full_name_field.send_keys(Keys.CONTROL, 'a')
-        self.full_name_field.send_keys(Keys.DELETE)
+
+        # wait until moodle page is fully loaded
+        driver.implicitly_wait(LONG_DELAY)
+
+        # clear full name field
+        fullNameField = driver.find_elements(By.CSS_SELECTOR, ".form-control")[1]
+        fullNameField.send_keys(Keys.CONTROL, "a")
+        fullNameField.send_keys(Keys.DELETE)
+
+        # clear short name field
+        shortNameField = driver.find_elements(By.CSS_SELECTOR, ".form-control")[2]
+        shortNameField.send_keys(Keys.CONTROL, "a")
+        shortNameField.send_keys(Keys.DELETE)
+
+        # clear course category field
+        driver.find_element(
+            By.CSS_SELECTOR, ".form-autocomplete-selection span.badge"
+        ).click()
+
+        submitBtn = driver.find_element(By.ID, "id_saveanddisplay")
+
+        return (fullNameField, shortNameField, submitBtn)
+
+    def performActions(self, fullName: str, shortName: str, category: bool, redirect = False):
+        elements = self.getElements()
+
+        # Input full name and short name value
+        action = (
+            ActionChains(driver)
+            .move_to_element(elements[0])
+            .click()
+            .send_keys(fullName)
+            .pause(DELAY)
+            .move_to_element(elements[1])
+            .click()
+            .send_keys(shortName)
+            .pause(DELAY)
+        )
+
+        # if category == True, select the first course category
+        if category == True:
+            category_downarrow = driver.find_element(
+                By.CSS_SELECTOR, ".form-autocomplete-downarrow"
+            )
+            action = action.move_to_element(category_downarrow).click().pause(DELAY)
+
+            category_selection = driver.find_elements(By.CSS_SELECTOR, ".form-control")[3]
+            action = (
+                action.move_to_element(category_selection)
+                .click()
+                .send_keys(Keys.ENTER)
+                .pause(DELAY)
+            )
+
+        # submit form
+        action = action.move_to_element(elements[2]).click().pause(LONG_DELAY)
+        action.perform()
         
-        self.short_name_field = driver.find_elements(By.CSS_SELECTOR, "input")[22]
-        self.short_name_field.send_keys(Keys.CONTROL, 'a')
-        self.short_name_field.send_keys(Keys.DELETE)
+        # check if browser redirect or not
+        if redirect == True:
+            self.assertTrue(str(driver.current_url) == "https://sandbox.moodledemo.net/course/view.php?id=2")
+        else:
+            self.assertTrue(str(driver.current_url) == FEATURE_URL)
         
-        self.badge_btn = driver.find_elements(By.CSS_SELECTOR, "span.badge")[6]
-        
-        self.submit_btn = driver.find_element(By.ID, "id_saveanddisplay")
-        return (self.full_name_field, self.short_name_field, self.badge_btn, self.submit_btn)
-    
+        action.reset_actions()
+
+    """ C1: điều kiện Course full name (full_name_field) đã được nhập.
+        C2: điều kiện Course short name (short_name_field) đã được nhập.
+        C3: điều kiện Course category đã được nhập.
+    """
+
     def test_rule_1(self):
         """C1: true, C2: true, C3: true"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[0]).click().send_keys(
-            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)"
-        ).pause(DELAY).move_to_element(elements[1]).click().send_keys(
-            "KTPM (CO3015)"
-        ).pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
+        self.performActions(
+            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)",
+            "KTPM (CO3015)",
+            True,
+            True,
+        )
 
     def test_rule_2(self):
         """C1: true, C2: true, C3: false"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[0]).click().send_keys(
-            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)"
-        ).pause(DELAY).move_to_element(elements[1]).click().send_keys(
-            "KTPM (CO3015)"
-        ).pause(DELAY).move_to_element(elements[2]).click().pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
-    
+        self.performActions(
+            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "KTPM (CO3015)", False
+        )
+
     def test_rule_3(self):
         """C1: true, C2: false, C3: true"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[0]).click().send_keys(
-            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)"
-        ).pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
-    
+        self.performActions("KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", True)
+
     def test_rule_4(self):
         """C1: true, C2: false, C3: false"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[0]).click().send_keys(
-            "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)"
-        ).move_to_element(elements[2]).click().pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
-        
-    
+        self.performActions("KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", False)
+
     def test_rule_5(self):
         """C1: false, C2: true, C3: true"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[1]).click().send_keys(
-            "KTPM (CO3015)"
-        ).pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
-    
+        self.performActions("", "KTPM (CO3015)", True)
+
     def test_rule_6(self):
         """C1: false, C2: true, C3: false"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[1]).click().send_keys(
-            "KTPM (CO3015)"
-        ).move_to_element(elements[2]).click().pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
+        self.performActions("", "KTPM (CO3015)", False)
 
     def test_rule_7(self):
         """C1: false, C2: false, C3: true"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
-    
+        self.performActions("", "", True)
+
     def test_rule_8(self):
         """C1: false, C2: false, C3: false"""
-        elements = self.getElements()
-        
-        # Check that the page is correct
-        ActionChains(driver).move_to_element(elements[2]).click().pause(DELAY).move_to_element(elements[3]).click().pause(LONG_DELAY).perform()
+        self.performActions("", "", False)
+        driver.quit()
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestEditCourseGeneral)
