@@ -1,5 +1,3 @@
-# Test script for the calendar import functionality
-
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -45,9 +43,9 @@ password.send_keys(PASSWORD)
 login = driver.find_element(By.ID, "loginbtn")
 login.click()
 
-
-class TestEditCourseGeneral(unittest.TestCase):
-    def getElements(self):
+class TestHelper():
+    @staticmethod
+    def getElements():
         driver.get(FEATURE_URL)
 
         # wait until moodle page is fully loaded
@@ -72,8 +70,9 @@ class TestEditCourseGeneral(unittest.TestCase):
 
         return (fullNameField, shortNameField, submitBtn)
 
-    def performActions(self, fullName: str, shortName: str, category: bool, redirect = False):
-        elements = self.getElements()
+    @staticmethod
+    def performActions(ctx, fullName: str, shortName: str, category: bool, redirect = False):
+        elements = TestHelper.getElements()
 
         # Input full name and short name value
         action = (
@@ -109,12 +108,13 @@ class TestEditCourseGeneral(unittest.TestCase):
         
         # check if browser redirect or not
         if redirect == True:
-            self.assertTrue(str(driver.current_url) == "https://sandbox.moodledemo.net/course/view.php?id=2")
+            ctx.assertTrue(str(driver.current_url) == "https://sandbox.moodledemo.net/course/view.php?id=2")
         else:
-            self.assertTrue(str(driver.current_url) == FEATURE_URL)
+            ctx.assertTrue(str(driver.current_url) == FEATURE_URL)
         
         action.reset_actions()
 
+class TestEditCourseGeneral(unittest.TestCase):
     """ C1: điều kiện Course full name (full_name_field) đã được nhập.
         C2: điều kiện Course short name (short_name_field) đã được nhập.
         C3: điều kiện Course category đã được nhập.
@@ -122,7 +122,8 @@ class TestEditCourseGeneral(unittest.TestCase):
 
     def test_rule_1(self):
         """C1: true, C2: true, C3: true"""
-        self.performActions(
+        TestHelper.performActions(
+            self,
             "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)",
             "KTPM (CO3015)",
             True,
@@ -131,33 +132,34 @@ class TestEditCourseGeneral(unittest.TestCase):
 
     def test_rule_2(self):
         """C1: true, C2: true, C3: false"""
-        self.performActions(
+        TestHelper.performActions(
+            self,
             "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "KTPM (CO3015)", False
         )
 
     def test_rule_3(self):
         """C1: true, C2: false, C3: true"""
-        self.performActions("KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", True)
+        TestHelper.performActions(self, "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", True)
 
     def test_rule_4(self):
         """C1: true, C2: false, C3: false"""
-        self.performActions("KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", False)
+        TestHelper.performActions(self, "KIEM TRA PHAN MEM (CO3015) (CQ_HK222)", "", False)
 
     def test_rule_5(self):
         """C1: false, C2: true, C3: true"""
-        self.performActions("", "KTPM (CO3015)", True)
+        TestHelper.performActions(self, "", "KTPM (CO3015)", True)
 
     def test_rule_6(self):
         """C1: false, C2: true, C3: false"""
-        self.performActions("", "KTPM (CO3015)", False)
+        TestHelper.performActions(self, "", "KTPM (CO3015)", False)
 
     def test_rule_7(self):
         """C1: false, C2: false, C3: true"""
-        self.performActions("", "", True)
+        TestHelper.performActions(self, "", "", True)
 
     def test_rule_8(self):
         """C1: false, C2: false, C3: false"""
-        self.performActions("", "", False)
+        TestHelper.performActions(self, "", "", False)
         driver.quit()
 
 
