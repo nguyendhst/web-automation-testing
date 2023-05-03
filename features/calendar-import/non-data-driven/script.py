@@ -27,6 +27,12 @@ from logger import Logger
 LOG_LV = "INFO"
 logger = Logger(LOG_LV)
 
+# Set up the driver
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+driver.implicitly_wait(10)
+
+
+# Open the page
 LOGIN_URL = "https://sandbox.moodledemo.net/login/index.php"
 FEATURE_URL = "https://sandbox.moodledemo.net/calendar/import.php"
 USERNAME = "admin"

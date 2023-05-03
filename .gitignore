@@ -1,3 +1,4 @@
 .DS_Store
 __pycache__
 features/upload-assignment/non-data-driven/files
+.python-version
