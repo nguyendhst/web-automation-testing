@@ -12,7 +12,6 @@ from utils.logger import Logger
 
 
 # import rich modules
-from utils.Logger import Logger
 from rich.panel import Panel
 
 # from rich.traceback import install
