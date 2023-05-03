@@ -13,6 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import unittest
 import sys
 import os
+import time
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
@@ -29,8 +30,8 @@ FEATURE_URL = "https://sandbox.moodledemo.net/course/view.php?id=2"
 USERNAME_TEACHER = "teacher"
 USERNAME_STUDENT = "student"
 PASSWORD = "sandbox"
-DELAY = 1.5
-LONG_DELAY = 5
+DELAY = 0.5
+LONG_DELAY = 2
 TIME_OUT = 10
 
 FILES_PATH = os.path.join(os.path.dirname(__file__), "files/")
@@ -140,7 +141,7 @@ class TestHelper():
         addSubmissionBtn.click()
         
         # wait until upload area is shown
-        driver.implicitly_wait(TIME_OUT)
+        time.sleep(1.5)
         
         # upload files
         for i in range(fileNameCount):
@@ -156,7 +157,7 @@ class TestHelper():
             # upload option
             try:
                 uploadOptions = WebDriverWait(driver, TIME_OUT).until(
-                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div.fp-repo a.nav-link'))
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.fp-repo.nav-item'))
                 )
                 
                 isActiveLink = False
@@ -164,7 +165,7 @@ class TestHelper():
                     if str(elementClass) == "active":
                         isActiveLink = True
                 if not isActiveLink:
-                    driver.execute_script("""document.querySelectorAll('div.fp-repo a.nav-link')[1].className ='nav-link active';""")
+                    ActionChains(driver).move_to_element(uploadOptions[1]).click().pause(DELAY).perform()
                 
             except: pass
             
@@ -179,16 +180,17 @@ class TestHelper():
                 uploadBtn = WebDriverWait(driver, TIME_OUT).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, '.fp-upload-btn'))
                 )
-                uploadBtn.click()
-                driver.implicitly_wait(LONG_DELAY)
+                ActionChains(driver).pause(DELAY).move_to_element(uploadBtn).click().pause(DELAY).perform()
+
             except:
                 return False
         
+        time.sleep(1)
         
         saveBtn = WebDriverWait(driver, TIME_OUT).until(
             EC.element_to_be_clickable((By.ID, 'id_submitbutton'))
         )
-        ActionChains(driver).pause(DELAY).move_to_element(saveBtn).click().perform()
+        saveBtn.click()
         
         # if an alert appears, pass testcase
         if fileNameCount == 0:
