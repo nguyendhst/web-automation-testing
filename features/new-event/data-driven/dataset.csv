@@ -1,0 +1,9 @@
+﻿event_title;date;location;duration;repeat times;expected
+;28;some places;22/12;3;failure
+CK0923Mom;;local palace;22/12;3;success
+XTN 2023;10;;10;0;success
+XTN 2023;25;SaiGon;;1;success
+Hoi khoe;7;Dong Thap;9/9;1;success
+Hoi thao;29;Ha Noi;2/2;1;failure
+Festival;9;Da Nang;0;2;failure
+Hoi trai;12;HCM;9/9;3;success
