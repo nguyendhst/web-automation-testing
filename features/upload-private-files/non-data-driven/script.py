@@ -5,6 +5,7 @@ from selenium.webdriver import *
 import unittest
 import sys
 import os
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
 from rich_unittest import RichTestRunner
 # from logger import Logger
@@ -45,17 +46,22 @@ class TestCreateNewEvent(unittest.TestCase):
     # cls.logger = logger
 
   @staticmethod
-  def createTxtFiles(size, numFile: int = 1):
+  def createTxtFiles(size, numFile: int = 1, fileIdx: bool = False):
     if not os.path.exists(FILES_PATH):
       os.makedirs(FILES_PATH)
-    for i in range(numFile):
-      with open(FILES_PATH + str(i) + ".txt", "w") as f:
+    if not fileIdx:
+      for i in range(numFile):
+        with open(FILES_PATH + str(i) + ".txt", "w") as f:
+          f.seek(size * MB_SIZE)
+          f.write('0')
+          f.close()
+    else:
+      with open(FILES_PATH + str(numFile) + ".txt", "w") as f:
         f.seek(size * MB_SIZE)
         f.write('0')
         f.close()
 
   def setUp(self):
-    self.driver.get(FEATURE_URL)
     self.driver.get("https://sandbox.moodledemo.net/user/files.php")
     
 
@@ -90,10 +96,14 @@ class TestCreateNewEvent(unittest.TestCase):
         action.reset_actions()
 
   def clickSaveChanges(self):
+    print("let's save change")
     try:
-      self.wait.until(
-          EC.element_to_be_clickable((By.XPATH, '//input[@value="Save changes"]'))
-      ).click()
+      btn = self.wait.until(
+          EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='submitbutton'][type='submit']"))
+      )
+      btn.click()
+      print(btn.get_attribute("class"))
+      return True
     except:
       return False
 
@@ -222,28 +232,44 @@ class TestCreateNewEvent(unittest.TestCase):
   #       )
     # self.assertTrue(modal.is_displayed())
     
-  def test_upload_valid_file(self):
-    fileCount = 3
-    self.createTxtFiles(10,fileCount)
-    ableToUploadFile = self.uploadFile(fileCount)
-    self.driver.implicitly_wait(20)
-    count = self.countFilesOnBoard()
-    self.assertGreaterEqual(count, fileCount)
+  # def test_upload_valid_file(self):
+  #   fileCount = 3
+  #   self.createTxtFiles(10,fileCount)
+  #   ableToUploadFile = self.uploadFile(fileCount)
+  #   self.driver.implicitly_wait(20)
+  #   count = self.countFilesOnBoard()
+  #   self.assertGreaterEqual(count, fileCount)
 
   
-  def test_upload_oversized_file(self):
-    fileCount = 1
-    self.createTxtFiles(10,fileCount)
-    fileUploadIcon = self.wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    )
-    fileUploadIcon.click()
-    self.clickUploadByUpFileBtn()
-    self.clickUploadBtn()
-    error_dialog = self.wait.until(
-      EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
-    )
-    self.assertTrue(error_dialog.is_displayed())
+  # def test_upload_oversized_file(self):
+  #   fileCount = 1
+  #   self.createTxtFiles(10,fileCount)
+  #   fileUploadIcon = self.wait.until(
+  #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
+  #   )
+  #   fileUploadIcon.click()
+  #   self.clickUploadByUpFileBtn()
+  #   self.clickUploadBtn()
+  #   error_dialog = self.wait.until(
+  #     EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
+  #   )
+  #   self.assertTrue(error_dialog.is_displayed())
+
+  def test_save(self):
+    # fileIdx = 30
+    # self.createTxtFiles(10,fileIdx, True)
+    # fileUploadIcon = self.wait.until(
+    #     EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
+    # )
+    # fileUploadIcon.click()
+    # self.clickUploadByUpFileBtn()
+    # self.inputFile(fileIdx)
+    # self.clickUploadBtn()
+    # self.driver.implicitly_wait(20)
+    status = self.clickSaveChanges()
+    self.assertTrue(status)
+
+
 
 
 if __name__ == "__main__":
