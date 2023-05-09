@@ -98,13 +98,17 @@ class TestCreateNewEvent(unittest.TestCase):
   def clickSaveChanges(self):
     print("let's save change")
     try:
+    #  btn = self.wait.until(
+    #      EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='submitbutton'][type='submit']"))
+    #  )
+
       btn = self.wait.until(
-          EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='submitbutton'][type='submit']"))
-      )
+            EC.element_to_be_clickable((By.XPATH, "//input[@name='submitbutton']"))
+        )
       btn.click()
       print(btn.get_attribute("class"))
       return True
-    except:
+    except Exception as e:
       return False
 
   def inputFile(self, idx: int):
@@ -115,14 +119,15 @@ class TestCreateNewEvent(unittest.TestCase):
     inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
   
   def clickUploadBtn(self):
+    #uploadBtn = self.wait.until(
+    #    EC.element_to_be_clickable((By.CSS_SELECTOR, '.fp-upload-btn'))
+    #)
+
     uploadBtn = self.wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, '.fp-upload-btn'))
+        EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
     )
-    action = (
-      ActionChains(self.driver).move_to_element(uploadBtn).click()
-      )
-    action.perform()
-    action.reset_actions()
+    ActionChains(self.driver).move_to_element(uploadBtn).click().perform()
+    #action.reset_actions()
 
   def startUpload(self):
     try:
@@ -256,22 +261,35 @@ class TestCreateNewEvent(unittest.TestCase):
   #   self.assertTrue(error_dialog.is_displayed())
 
   def test_save(self):
-    # fileIdx = 30
-    # self.createTxtFiles(10,fileIdx, True)
-    # fileUploadIcon = self.wait.until(
-    #     EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    # )
-    # fileUploadIcon.click()
-    # self.clickUploadByUpFileBtn()
-    # self.inputFile(fileIdx)
-    # self.clickUploadBtn()
-    # self.driver.implicitly_wait(20)
-    status = self.clickSaveChanges()
-    self.assertTrue(status)
+    fileIdx = 30
+    self.createTxtFiles(10,fileIdx, True)
+    fileUploadIcon = self.wait.until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
+    )
+    fileUploadIcon.click()
+    self.clickUploadByUpFileBtn()
+    self.inputFile(fileIdx)
+    self.clickUploadBtn()
+
+    # wait until dialog disappear
+    # a div with class that contains 'filepicker' is still there
+    self.wait.until(
+       EC.invisibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
+    ) 
+    self.driver.implicitly_wait(20)
+    self.clickSaveChanges()
+
+    # wait for a success message -- incomplete =]
+    #success = self.wait.until(
+    #    EC.element_to_be_clickable((By.CSS_SELECTOR, 'toast?'))
+    #    )
+
+
+    self.assertTrue(success.is_displayed())
 
 
 
 
 if __name__ == "__main__":
-	suite = unittest.TestLoader().loadTestsFromTestCase(TestCreateNewEvent)
-	RichTestRunner().run(suite)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestCreateNewEvent)
+    RichTestRunner().run(suite)
