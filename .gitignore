@@ -1,4 +1,8 @@
 .DS_Store
 __pycache__
 features/upload-assignment/non-data-driven/files
+features/upload-private-files/non-data-driven/files
+features/upload-private-files/data-driven/files
+git-filter-repo.txt
 .python-version
+.vscode
