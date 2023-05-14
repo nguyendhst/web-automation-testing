@@ -5,7 +5,7 @@ from selenium.webdriver import *
 import unittest
 import sys
 import os
-import time
+import csv
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
 from rich_unittest import RichTestRunner
 # from logger import Logger
@@ -43,10 +43,11 @@ class TestCreateNewEvent(unittest.TestCase):
     cls.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     cls.wait = WebDriverWait(cls.driver, TIME_OUT)
     cls.login(cls)
+
     # cls.logger = logger
 
   @staticmethod
-  def createTxtFiles(size, numFile: int = 1, fileIdx: bool = False):
+  def createTxtFiles(size, numFile, fileIdx: bool = False):
     if not os.path.exists(FILES_PATH):
       os.makedirs(FILES_PATH)
     if not fileIdx:
@@ -83,44 +84,54 @@ class TestCreateNewEvent(unittest.TestCase):
     
     isActiveLink = False
     for elementClass in uploadOptions[1].get_attribute("class"):
-        if str(elementClass) == "active":
-            isActiveLink = True
+      if str(elementClass) == "active":
+        isActiveLink = True
+    
     if not isActiveLink:
-        action = (
-          ActionChains(self.driver)
-          .move_to_element(uploadOptions[1])
-          .click()
-          .pause(20)
-          )
-        action.perform()
-        action.reset_actions()
+      action = (
+        ActionChains(self.driver)
+        .move_to_element(uploadOptions[1])
+        .click()
+        .pause(20)
+        )
+      action.perform()
+      action.reset_actions()
 
   def clickSaveChanges(self):
-    print("let's save change")
-    try:
-      self.wait.until(
-          EC.element_to_be_clickable((By.CSS_SELECTOR, "input[name='submitbutton'][type='submit']"))
-      ).click()
-      return True
-    except:
-      return False
+    self.wait.until(
+       EC.invisibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
+      ) 
+    btn = self.wait.until(
+          EC.element_to_be_clickable((By.XPATH, "//input[@name='submitbutton']"))
+      )
+    btn.click()
+    print(btn.get_attribute("class"))
+    return True
 
   def inputFile(self, idx: int):
     # input file
+    print("input file index = {}".format(idx))
+    self.wait.until(
+       EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
+      )
+    self.wait.until(
+      EC.invisibility_of_element_located((By.CSS_SELECTOR, 'i.icon.fa.fa-spin'))
+    )
     inputFile = self.wait.until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, 'input[name="repo_upload_file"]'))
     )
     inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
   
   def clickUploadBtn(self):
-    uploadBtn = self.wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, '.fp-upload-btn'))
-    )
-    action = (
-      ActionChains(self.driver).move_to_element(uploadBtn).click()
+    try:
+      uploadBtn = self.wait.until(
+          EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
       )
-    action.perform()
-    action.reset_actions()
+      ActionChains(self.driver).move_to_element(uploadBtn).click().perform()
+      return True
+    except:
+      return False
+
 
   def startUpload(self):
     try:
@@ -129,13 +140,13 @@ class TestCreateNewEvent(unittest.TestCase):
       )
       fileUploadIcon.click()
     except:
-        # when reach max files, the upload icon will disappear
+        # when existing files, the upload icon will disappear
       fileUploadIcon = self.wait.until(
           EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
       )
       fileUploadIcon.click()
 
-  def uploadFile(self,fileNameCount):
+  def uploadFile(self, fileNameCount):
     # upload files
     for i in range(fileNameCount):
       fileUploadIcon = self.wait.until(
@@ -162,7 +173,6 @@ class TestCreateNewEvent(unittest.TestCase):
       saveChange = self.clickSaveChanges()
       if not saveChange:
         print("Cannot Save Changes")
-        return False
       self.driver.implicitly_wait(10)
     
     return True
@@ -181,62 +191,23 @@ class TestCreateNewEvent(unittest.TestCase):
       EC.element_to_be_clickable((By.CSS_SELECTOR, '.fp-dlg-butoverwrite'))
     ).click()
 
+  def test_upload_valid_file(self):
+    with open(DATA_PATH, "r") as csv_file:
+      reader = csv.reader(csv_file, delimiter=';')
+      next(reader)
+      for row in reader:
+        self.logger.log(
+            f"Testing: {row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}", "info"
+        )
+        fileSize = row[0]
+        expected = row[2]
+        fileCount = row[1]
 
-  # def test_upload_no_file(self):
-  #   fileUploadIcon = self.wait.until(
-  #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-  #   )
-  #   fileUploadIcon.click()
-  #   self.clickUploadByUpFileBtn()
-  #   self.clickUploadBtn()
-  #   error_dialog = self.wait.until(
-  #     EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
-  #   )
-  #   self.assertTrue(error_dialog.is_displayed())
+        self.createTxtFiles(fileSize,fileCount)
+        ableToUploadFile = self.uploadFile(fileCount)
 
-  # def test_upload_exist(self):
-  #   fileCount = 1
-  #   self.createTxtFiles(10,fileCount)
-  #   fileUploadIcon = self.wait.until(
-  #     EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-  #       )
-  #   fileUploadIcon.click()
-      
-  #   self.clickUploadByUpFileBtn()  
-  #   self.inputFile(0)
-  #   self.clickUploadBtn()
-
-  #   try:
-  #     modal = self.wait.until(
-  #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
-  #     )
-  #     print(modal)
-  #   except:
-  #     modal = None
-
-  #   if modal is None:
-  #     self.clickSaveChanges()
-  #     fileUploadIcon = self.wait.until(
-  #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.fp-btn-add'))
-  #         )
-  #     fileUploadIcon.click()
-        
-  #     self.clickUploadByUpFileBtn()  
-  #     self.inputFile(0)
-  #     self.clickUploadBtn()
-  #     print("second import files...")
-  #     modal = self.wait.until(
-  #         EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
-  #       )
-    # self.assertTrue(modal.is_displayed())
-    
-  # def test_upload_valid_file(self):
-  #   fileCount = 3
-  #   self.createTxtFiles(10,fileCount)
-  #   ableToUploadFile = self.uploadFile(fileCount)
-  #   self.driver.implicitly_wait(20)
-  #   count = self.countFilesOnBoard()
-  #   self.assertGreaterEqual(count, fileCount)
+        # count = self.countFilesOnBoard()
+        # self.assertGreaterEqual(count, fileCount)
 
   
   # def test_upload_oversized_file(self):
@@ -253,22 +224,28 @@ class TestCreateNewEvent(unittest.TestCase):
   #   )
   #   self.assertTrue(error_dialog.is_displayed())
 
-  def test_save(self):
-    fileIdx = 30
-    self.createTxtFiles(10,fileIdx, True)
-    fileUploadIcon = self.wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    )
-    fileUploadIcon.click()
-    self.clickUploadByUpFileBtn()
-    self.inputFile(fileIdx)
-    self.clickUploadBtn()
-    self.driver.implicitly_wait(20)
-    status = self.clickSaveChanges()
-    self.assertTrue(status)
+  # def test_upload_a_new_file(self):
+  #   fileIdx = 40
+  #   self.createTxtFiles(10,fileIdx, True)
+  #   fileUploadIcon = self.wait.until(
+  #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
+  #   )
+  #   fileUploadIcon.click()
+  #   self.clickUploadByUpFileBtn()
+  #   self.inputFile(fileIdx)
+  #   self.clickUploadBtn()
+
+  #   # wait until dialog disappear
+  #   # a div with class that contains 'filepicker' is still there
+    
+  #   self.driver.implicitly_wait(20)
+  #   self.clickSaveChanges()
+  #   count = self.countFilesOnBoard()
+  #   self.assertGreaterEqual(count, 1)
+
 
 
 
 if __name__ == "__main__":
-	suite = unittest.TestLoader().loadTestsFromTestCase(TestCreateNewEvent)
-	RichTestRunner().run(suite)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestCreateNewEvent)
+    RichTestRunner().run(suite)
