@@ -88,6 +88,8 @@ class TestHelper():
 
         action.perform()
         action.reset_actions()
+        driver.switch_to.default_content()
+        # time.sleep(1)
 
 # [Use Case 1/Module3] DecisionTable Technique
 class TestEditInfo(unittest.TestCase):

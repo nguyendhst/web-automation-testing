@@ -52,3 +52,81 @@ password.send_keys(PASSWORD)
 
 login = driver.find_element(By.ID, "loginbtn")
 login.click()
+
+class TestHelper():    
+    @staticmethod
+    def performActions(ctx, firstNameValue: str, lastNameValue: str, emailValue: str, expected: str):
+        # navigate to moodle page
+        driver.get(FEATURE_URL)
+
+        # wait until moodle page is fully loaded
+        driver.implicitly_wait(LONG_DELAY)
+
+        #email is requested a change -> cancel request
+        try: 
+            cancelEmail = driver.find_element(By.LINK_TEXT, "Cancel email change")
+            cancelEmail.click()
+            driver.implicitly_wait(LONG_DELAY)
+        except Exception:
+                pass
+
+        # clear first name field and last name field     
+        firstNameField = driver.find_element(By.ID,"id_firstname")
+        firstNameField.clear()
+        lastNameField = driver.find_element(By.ID,"id_lastname")
+        lastNameField.clear()
+        emailField = driver.find_element(By.ID,"id_email")
+        emailField.clear()
+
+        # Input first name, last name and email value
+        action = ActionChains(driver)\
+            .click(firstNameField)\
+            .send_keys(firstNameValue)\
+            .click(lastNameField)\
+            .send_keys(lastNameValue)\
+            .click(emailField)\
+            .send_keys(emailValue)\
+            .pause(DELAY)
+
+        #submit form
+        submitBtn = driver.find_element(By.ID, "id_submitbutton")
+        action.click(submitBtn)
+
+        action.perform()
+        action.reset_actions()
+
+        result = '...'
+
+        try:
+            errorFirstName = driver.find_element(By.ID, "id_error_firstname")
+            result = "failure"
+        except:
+            result = "success"
+        finally: pass
+
+        try:
+            ctx.assertEqual(result, expected)
+            logger.log(
+                f"Test passed: Got: {result}, Expected: {expected}", "info"
+            )
+        except AssertionError:
+            logger.log(
+                f"Test failed: Got: {result}, Expected: {expected}", "error"
+            )
+        finally: pass
+
+
+class TestEditInfo(unittest.TestCase):
+    def test(self):
+        with open(DATA_PATH, "r") as f:
+            reader = csv.reader(f)
+            next(reader)
+            for row in reader:
+                try:
+                    TestHelper.performActions(self, row[0], row[1], row[2], row[3])
+                finally: continue
+        
+
+if __name__ == "__main__":
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestEditInfo)
+    RichTestRunner().run(suite)
