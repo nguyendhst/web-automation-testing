@@ -9,7 +9,7 @@ import csv
 import time
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
 from rich_unittest import RichTestRunner
-from logger import Logger
+# from logger import Logger
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
@@ -23,8 +23,8 @@ from selenium.webdriver.support import expected_conditions as EC
 LOGIN_URL = "https://sandbox.moodledemo.net/login/index.php"
 FEATURE_URL = "https://sandbox.moodledemo.net/my/"
 
-LOG_LV = "INFO"
-logger = Logger(LOG_LV)
+# LOG_LV = "INFO"
+# logger = Logger(LOG_LV)
 
 USERNAME = "student"
 PASSWORD = "sandbox"
@@ -43,7 +43,7 @@ class TestCreateNewEvent(unittest.TestCase):
     cls.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     cls.wait = WebDriverWait(cls.driver, TIME_OUT)
     cls.login(cls)
-    cls.logger = logger
+    # cls.logger = logger
 
   @staticmethod
   def createTxtFiles(size, numFile, fileIdx: bool = False):
@@ -81,7 +81,7 @@ class TestCreateNewEvent(unittest.TestCase):
     self.driver.find_element(By.ID, "loginbtn").click()
 
   def clickUploadByUpFileBtn(self):
-    # print('--- Click Navigation Button ---')
+    print('--- Click Navigation Button ---')
     uploadOptions = self.wait.until(
         EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.fp-repo.nav-item'))
     )
@@ -102,8 +102,7 @@ class TestCreateNewEvent(unittest.TestCase):
       action.reset_actions()
 
   def clickSaveChanges(self):
-    # print('--- Click Save Changes ---')
-
+    print('--- Click Save Changes ---')
     self.wait.until(
        EC.invisibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
       ) 
@@ -119,7 +118,7 @@ class TestCreateNewEvent(unittest.TestCase):
 
   def inputFile(self, idx: int):
     # input file
-    # print("INPUT FILE = {}".format(idx))
+    print("INPUT FILE = {}".format(idx))
     self.wait.until(
        EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
       )
@@ -137,7 +136,7 @@ class TestCreateNewEvent(unittest.TestCase):
     return True
   
   def clickUploadBtn(self):
-    # print('--- Click Upload a file Button ---')
+    print('--- Click Upload a file Button ---')
     try:
       uploadBtn = self.wait.until(
           EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
@@ -148,7 +147,7 @@ class TestCreateNewEvent(unittest.TestCase):
       return False
 
   def filePickerClick(self):
-    # print('--- File Picker ---')
+    print('--- File Picker ---')
     fileUploadIcon = self.wait.until(
             EC.element_to_be_clickable((By.XPATH, "//div[@class='fp-btn-add']"))
         )
@@ -157,7 +156,7 @@ class TestCreateNewEvent(unittest.TestCase):
 
   def uploadEachFile(self, filename):
       # upload files
-    # print('--- File Picker ---')
+    print('--- File Picker ---')
     fileUploadIcon = self.wait.until(
         EC.element_to_be_clickable((By.XPATH, "//div[@class='fp-btn-add']"))
     )
@@ -181,7 +180,7 @@ class TestCreateNewEvent(unittest.TestCase):
       )
 
       overwrite = self.clickOverwriteBtn()
-      # print("OVERWRITE = {}".format(overwrite))
+      print("OVERWRITE = {}".format(overwrite))
 
     except:
         pass
@@ -236,10 +235,10 @@ class TestCreateNewEvent(unittest.TestCase):
             self.assertTrue(error_dialog.is_displayed())
 
           except:
-            self.logger.log(
-              f"Test failed: Got: {error_dialog.is_displayed()}, Expected: {self.expected}", "No file attached"
-            )
-            # print('>>> FAILED: no file attached but error dialog not displayed')
+            # self.logger.log(
+            #   f"Test failed: Got: {error_dialog.is_displayed()}, Expected: {self.expected}", "No file attached"
+            # )
+            print('>>> FAILED: no file attached but error dialog not displayed')
           
         else: 
           self.createTxtFiles(fileSize,fileCount)
@@ -257,9 +256,9 @@ class TestCreateNewEvent(unittest.TestCase):
             result = True
           self.asserTrue(result)
         except:
-          self.logger.log(
-            f"Test failed: Upload file {fileIdx}, Expected: {self.expected}", "upload file error"
-        )
+        #   self.logger.log(
+        #     f"Test failed: Upload file {fileIdx}, Expected: {self.expected}", "upload file error"
+        # )
           print('>>> FAILED: upload file {0}'.format(fileIdx))
 
       if fileCount != 0:
@@ -269,12 +268,12 @@ class TestCreateNewEvent(unittest.TestCase):
             count = self.countFilesOnBoard()
             self.assertGreaterEqual(count, fileCount)
           except:
-             self.logger.log(
-                f"Test failed: Got: {count} files, Expected: {self.expected}", "error"
-            )
-              # print('>>> failed')
+            #  self.logger.log(
+            #     f"Test failed: Got: {count} files, Expected: {self.expected}", "error"
+            # )
+              print('>>> failed')
         except:
-          self.logger.log(
+          print(
             f"Test failed: Got: {ableToUploadFile}, Expected: {self.expected}", "error"
           )
 
