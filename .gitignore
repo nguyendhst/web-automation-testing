@@ -6,3 +6,6 @@ features/upload-private-files/data-driven/files
 git-filter-repo.txt
 .python-version
 .vscode
+
+features/upload-private-files/non-data-driven/files
+features/upload-private-files/data-driven/files
