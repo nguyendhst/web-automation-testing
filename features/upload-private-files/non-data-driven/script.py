@@ -79,25 +79,6 @@ class TestCreateNewEvent(unittest.TestCase):
         self.driver.find_element(By.ID, "loginbtn").click()
 
     def clickUploadByUpFileBtn(self):
-        # uploadOptions = self.wait.until(
-        #    EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.fp-repo.nav-item'))
-        # )
-
-        # isActiveLink = False
-
-        # for elementClass in uploadOptions[1].get_attribute("class"):
-        #  if str(elementClass) == "active":
-        #    isActiveLink = True
-
-        # if not isActiveLink:
-        #  action = (
-        #    ActionChains(self.driver)
-        #    .move_to_element(uploadOptions[1])
-        #    .click()
-        #    .pause(20)
-        #    )
-        #  action.perform()
-        #  action.reset_actions()
 
         btn = self.wait.until(
             EC.element_to_be_clickable(
@@ -109,18 +90,6 @@ class TestCreateNewEvent(unittest.TestCase):
         print("Click upload button, direct to the file picker!!")
 
     def clickSaveChanges(self):
-        #self.wait.until(
-        #    EC.invisibility_of_element_located(
-        #        (By.XPATH, "//div[contains(@class,'filepicker')]")
-        #    )
-        #)
-        #btn = self.wait.until(
-        #    EC.element_to_be_clickable((By.XPATH, "//input[@name='submitbutton']"))
-        #)
-        #btn.click()
-        #print("Click save changes button!!")
-        #print(btn.get_attribute("class"))
-        #return True
 
         btn = self.wait.until(
             EC.element_to_be_clickable((By.XPATH, "//input[@name='submitbutton']"))
@@ -130,73 +99,37 @@ class TestCreateNewEvent(unittest.TestCase):
         return True
 
     def inputFile(self, idx: int):
-        # input file
-        inputFile = self.wait.until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, 'input[name="repo_upload_file"]')
-            )
-        )
-        # print(inputFile.is_displayed())
-        # inputFile.click()
-        # inputFile.clear()
-        ### cannot send keys???
-        inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
-        print("input file index = {}".format(FILES_PATH + str(idx) + ".txt"))
+      # input file
+      inputFile = self.wait.until(
+          EC.element_to_be_clickable(
+              (By.CSS_SELECTOR, 'input[name="repo_upload_file"]')
+          )
+      )
+      print("send files", inputFile.is_displayed())
+      inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
 
     def clickUploadBtn(self):
-        time.sleep(5)
-        uploadBtn = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
-         )
-        # try:
-        #  self.wait.until(
-        #    EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'filepicker')]"))
-        #  )
-        # except:
-        #  print ("CANNOT SEE ANY FILE PICKER")
-        #  return False
-        # actions = ActionChains(self.driver).move_to_element(uploadBtn).click(uploadBtn)
-        # actions.perform()
-        # print("Click To Upload Imported file")
-        # actions.pause(10)
-       
-        uploadBtn.click()
+      time.sleep(5)
+      uploadBtn = self.wait.until(
+          EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
+        )
+      
+      uploadBtn.click()
 
-        try:
-            # timeout = 5
-            WebDriverWait(self.driver, 20).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, "p.fp-dlg-text"))
-            )
+      try:
+          # timeout = 5
+          WebDriverWait(self.driver, 20).until(
+              EC.visibility_of_element_located((By.CSS_SELECTOR, "p.fp-dlg-text"))
+          )
 
-            self.clickOverwriteBtn()
-            self.driver.implicitly_wait(10)
+          self.clickOverwriteBtn()
+          self.driver.implicitly_wait(10)
 
-        except:
+      except:
             pass
-        
 
-            
-
-     
-
-    # def startUpload(self):
-    #   try:
-    #     fileUploadIcon = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.fm-empty-container'))
-    #     )
-    #     fileUploadIcon.click()
-    #   except:
-    #       # when reach max files, the upload icon will disappear
-    #     fileUploadIcon = self.wait.until(
-    #         EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    #     )
-    #     fileUploadIcon.click()
 
     def uploadFile(self, fileNameCount):
-        # function selectAllElements(cssselector) {
-        # 	return document.querySelectorAll(cssselector);
-        # }
-
         # upload files
         for i in range(fileNameCount):
 
@@ -218,11 +151,9 @@ class TestCreateNewEvent(unittest.TestCase):
             time.sleep(2)
        
             inputFile.send_keys(FILES_PATH + str(i) + ".txt")
-            print("input file index = {}".format(FILES_PATH + str(i) + ".txt"))
 
             btn = self.wait.until(
-                EC.element_to_be_clickable(
-                    
+                EC.element_to_be_clickable(        
                     (By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']")
                 )
             )
@@ -231,7 +162,6 @@ class TestCreateNewEvent(unittest.TestCase):
 
             overwrite = False
             try:
-                print("wait for overwrite button")
                 WebDriverWait(self.driver, 10).until(
                     EC.visibility_of_element_located((By.CSS_SELECTOR, "p.fp-dlg-text"))
                 )
@@ -253,7 +183,6 @@ class TestCreateNewEvent(unittest.TestCase):
 
             #self.driver.implicitly_wait(5)
             time.sleep(5)
-            print("Uploaded file index = {}".format(i))
 
         return True
 
@@ -317,11 +246,10 @@ class TestCreateNewEvent(unittest.TestCase):
     #     self.clickUploadByUpFileBtn()
     #     self.inputFile(0)
     #     self.clickUploadBtn()
-    #     print("second import files...")
     #     modal = self.wait.until(
     #         EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
     #       )
-    # self.assertTrue(modal.is_displayed())
+    #   self.assertTrue(modal.is_displayed())
 
     def test_upload_valid_file(self):
         fileCount = 3
@@ -331,38 +259,26 @@ class TestCreateNewEvent(unittest.TestCase):
         count = self.countFilesOnBoard()
         self.assertGreaterEqual(count, fileCount)
 
-    # def test_upload_oversized_file(self):
-    #   fileCount = 1
-    #   self.createTxtFiles(10,fileCount)
-    #   fileUploadIcon = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    #   )
-    #   fileUploadIcon.click()
-    #   self.clickUploadByUpFileBtn()
-    #   self.clickUploadBtn()
-    #   error_dialog = self.wait.until(
-    #     EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
-    #   )
-    #   self.assertTrue(error_dialog.is_displayed())
+    def test_upload_oversized_file(self):
+      fileCount = 1
+      self.createTxtFiles(100,101,True)
 
-    # def test_upload_a_new_file(self):
-    #   fileIdx = 40
-    #   self.createTxtFiles(10,fileIdx, True)
-    #   fileUploadIcon = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    #   )
-    #   fileUploadIcon.click()
-    #   self.clickUploadByUpFileBtn()
-    #   self.inputFile(fileIdx)
-    #   self.clickUploadBtn()
+      # fileUploadIcon = self.wait.until(
+      #           EC.element_to_be_clickable((By.XPATH, "//div[@class='fp-btn-add']"))
+      #       )
 
-    #   # wait until dialog disappear
-    #   # a div with class that contains 'filepicker' is still there
-
-    #   self.driver.implicitly_wait(20)
-    #   self.clickSaveChanges()
-    #   count = self.countFilesOnBoard()
-    #   self.assertGreaterEqual(count, 1)
+      fileUploadIcon = self.wait.until(
+          EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.icon.fa-file-o'))
+      )
+      fileUploadIcon.click()
+      self.driver.execute_script("arguments[0].click();", fileUploadIcon)
+      self.inputFile(101)
+      self.clickUploadByUpFileBtn()
+      self.clickUploadBtn()
+      error_dialog = self.wait.until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
+      )
+      self.assertTrue(error_dialog.is_displayed())
 
 
 if __name__ == "__main__":
