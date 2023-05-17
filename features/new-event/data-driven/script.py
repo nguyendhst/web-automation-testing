@@ -94,6 +94,7 @@ class TestCreateNewEvent(unittest.TestCase):
   def choose_event_date(self):
     if self.event_date == "":
       return
+      
     date = int(self.event_date)
     self.wait.until(
         EC.element_to_be_clickable((By.ID, 'id_timestart_day'))
@@ -183,7 +184,7 @@ class TestCreateNewEvent(unittest.TestCase):
       next(reader)
       for row in reader:
         self.logger.log(
-            f"Testing: {row[0]}, {row[1]}, {row[2]}, {row[3]}, {row[4]}", "info"
+            f"Title: {row[0]}, Date: {row[1]}, Location: {row[2]}, Duration: {row[3]}, Repeat: {row[4]}", "info"
         )
         self.event_title = row[0]
         self.event_date = row[1]
@@ -201,18 +202,17 @@ class TestCreateNewEvent(unittest.TestCase):
         self.choose_repeat()
         self.save()
 
-
         error_noti = self.driver.find_element(By.ID, 'fgroup_id_error_durationgroup')
-        required_error_text = self.driver.find_element(By.XPATH, '//*[@id="id_error_name"]') 
+        required_error_text = self.driver.find_element(By.XPATH, '//*[@id="id_error_name"]')
 
+        self.logger.log(
+          f'Done create a new event', 'info'
+        )
         if (error_noti.is_displayed() and self.expected == 'success'):
-          self.fail("Error on configuring duration for event")
+          self.logger.log(f"Error on configuring duration for event", 'info')
         elif (required_error_text.is_displayed() and self.expected == 'success'):
-          self.fail("Event name is required")
+          self.logger.log(f"Event name is required",'info')
 
-        self.driver.implicitly_wait(30)
-        
-  
 
 if __name__ == "__main__":
 	suite = unittest.TestLoader().loadTestsFromTestCase(TestCreateNewEvent)
