@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -37,7 +38,7 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "data.csv")
 
 class Helper():
     @staticmethod
-    def createEssayQ(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out):
+    def createEssayQ(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out, expected):
         driver = ctx.driver
         
         driver.find_element(By.CSS_SELECTOR, ".btn.btn-secondary").click()
@@ -45,20 +46,20 @@ class Helper():
         driver.find_element(By.CLASS_NAME, "submitbutton").click()
         time.sleep(1)
         # function to fill form
-        Helper.formFiller(ctx, name, text, mark, feedback, ID, out)
+        Helper.formFiller(ctx, name, text, mark, feedback, ID, out, expected)
     
     @staticmethod
-    def editEssayFromQBank(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out):
+    def editEssayFromQBank(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out, expected):
         driver = ctx.driver
         
         driver.find_element(By.ID, "action-menu-toggle-1").click()
         driver.find_element(By.ID, "actionmenuaction-1").click()
         time.sleep(1)
-        Helper.formFiller(ctx, name, text, mark, feedback, ID, out)
+        Helper.formFiller(ctx, name, text, mark, feedback, ID, out, expected)
         
     
     @staticmethod
-    def formFiller(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out = False):
+    def formFiller(ctx, name: str, text: str, mark: str, feedback: str, ID: str, out = False, expected = ""):
         driver = ctx.driver
         
         # question name
@@ -97,7 +98,28 @@ class Helper():
         if out == False: driver.find_element(By.ID, "id_updatebutton").click()
         else: driver.find_element(By.ID, "id_submitbutton").click()
         
-        time.sleep(2)       
+        time.sleep(1)
+        
+        result = '...'
+        if expected != "":
+            try:
+                driver.find_element(By.ID, "action-menu-toggle-1")
+                result = "success"
+            except NoSuchElementException:
+                result = "failed"
+            finally: pass
+                
+            try:
+                ctx.assertEqual(result, expected)
+                logger.log(
+                    f"Test passed: Got: {result}, Expected: {expected}", "info"
+                )
+            except AssertionError:
+                logger.log(
+                    f"Test failed: Got: {result}, Expected: {expected}", "error"
+                )
+            finally: pass
+        
 
 # END OF TEMPLATE -- CREATE YOUR OWN CLASS
 class TestDrive(unittest.TestCase):
@@ -148,7 +170,7 @@ class TestDrive(unittest.TestCase):
         driver.get(FEATURE_URL)
         time.sleep(1)
         # create some essays
-        Helper.createEssayQ(cls, "Question 66", "Default descriptions... Q6", "1", "Some feedbacks", "066", True)
+        Helper.createEssayQ(cls, "Question 66", "Default descriptions... Q6", "1", "Some feedbacks", "066", True, "")
 
     def setUp(self): pass
         
@@ -162,9 +184,9 @@ class TestDrive(unittest.TestCase):
             next(reader)
             for row in reader:
                 try:
-                    Helper.editEssayFromQBank(self, row[0], row[1], row[2], row[3], row[4], row[5])
+                    Helper.editEssayFromQBank(self, row[0], row[1], row[2], row[3], row[4], row[5], row[6])
                 except:
-                    Helper.formFiller(self, row[0], row[1], row[2], row[3], row[4], row[5])
+                    Helper.formFiller(self, row[0], row[1], row[2], row[3], row[4], row[5], row[6])
                 finally: continue
 
 if __name__ == "__main__":
