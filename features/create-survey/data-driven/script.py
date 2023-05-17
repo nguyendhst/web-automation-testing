@@ -170,7 +170,7 @@ class TestHelper():
         responseReportBtn = driver.find_element(By.CSS_SELECTOR, 'li[data-key="9"] .nav-link')
         responseReportBtn.click()
         
-        time.sleep(LONG_DELAY)
+        time.sleep(LONG_DELAY * 2)
         
         # return false if cannot find survey graph
         try:
