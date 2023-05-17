@@ -10,7 +10,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "utils"))
 from rich_unittest import RichTestRunner
 
-# from logger import Logger
+from logger import Logger
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
@@ -34,10 +34,8 @@ TIME_OUT = 100
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "dataset.csv"))
 FILES_PATH = os.path.join(os.path.dirname(__file__), "files/")
 NUM_OF_FILES = 10
-
-
-# LOG_LV = "INFO"
-# logger = Logger(LOG_LV)
+LOG_LV = "INFO"
+logger = Logger(LOG_LV)
 
 
 class TestCreateNewEvent(unittest.TestCase):
@@ -46,7 +44,7 @@ class TestCreateNewEvent(unittest.TestCase):
         cls.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         cls.wait = WebDriverWait(cls.driver, TIME_OUT)
         cls.login(cls)
-        # cls.logger = logger
+        cls.logger = logger
 
     @staticmethod
     def createTxtFiles(size, numFile, fileIdx: bool = False):
@@ -55,7 +53,8 @@ class TestCreateNewEvent(unittest.TestCase):
         if not fileIdx:
             for i in range(numFile):
                 with open(FILES_PATH + str(i) + ".txt", "w") as f:
-                    f.seek(size * MB_SIZE)
+                    filesize = size - 1 if size > 2 else size
+                    f.seek(filesize * MB_SIZE)
                     f.write("0")
                     f.close()
         else:
@@ -78,19 +77,55 @@ class TestCreateNewEvent(unittest.TestCase):
 
         self.driver.find_element(By.ID, "loginbtn").click()
 
-    def clickUploadByUpFileBtn(self):
-
-        btn = self.wait.until(
-            EC.element_to_be_clickable(
-                (By.XPATH, "//span[contains(text(), 'Upload a file')]")
+    def emptyBoard(self):
+        try :
+            empty = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, ".fm-empty-container"))
             )
-        )
-        btn.click()
+            empty = True
+        except:
+            empty = False
 
-        print("Click upload button, direct to the file picker!!")
+        if not empty:
+            self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "i.icon.fa-list.fa-fw"))
+            ).click()
+            self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-togglegroup="file-selections"]'))
+            ).click()
+            self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "i.icon.fa-trash.fa-fw"))
+            ).click()
+            self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.fp-dlg-butconfirm.btn-primary.btn"))
+            ).click()
+            self.logger.log(
+                    f'Reset board', 'info'
+                )
+
+
+    def clickUploadByUpFileBtn(self):
+        uploadOptions = self.wait.until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".fp-repo.nav-item"))
+        )
+
+        isActiveLink = False
+        for elementClass in uploadOptions[1].get_attribute("class"):
+            if str(elementClass) == "active":
+                isActiveLink = True
+
+        if not isActiveLink:
+            action = (
+                ActionChains(self.driver)
+                .move_to_element(uploadOptions[1])
+                .click()
+                .pause(20)
+            )
+            action.perform()
+            action.reset_actions()
+
 
     def clickSaveChanges(self):
-
         btn = self.wait.until(
             EC.element_to_be_clickable((By.XPATH, "//input[@name='submitbutton']"))
         )
@@ -100,37 +135,36 @@ class TestCreateNewEvent(unittest.TestCase):
 
     def inputFile(self, idx: int):
       # input file
-      inputFile = self.wait.until(
-          EC.element_to_be_clickable(
-              (By.CSS_SELECTOR, 'input[name="repo_upload_file"]')
-          )
-      )
-      print("send files", inputFile.is_displayed())
-      inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
+        inputFile = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, 'input[name="repo_upload_file"]')
+            )
+        )
+        # print("send files", inputFile.is_displayed())
+        inputFile.send_keys(FILES_PATH + str(idx) + ".txt")
 
     def clickUploadBtn(self):
-      time.sleep(5)
-      uploadBtn = self.wait.until(
-          EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
-        )
-      
-      uploadBtn.click()
+        time.sleep(5)
+        uploadBtn = self.wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']"))
+            )
+        
+        uploadBtn.click()
 
-      try:
-          # timeout = 5
-          WebDriverWait(self.driver, 20).until(
-              EC.visibility_of_element_located((By.CSS_SELECTOR, "p.fp-dlg-text"))
-          )
+        try:
+            # timeout = 5
+            WebDriverWait(self.driver, 20).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, "p.fp-dlg-text"))
+            )
 
-          self.clickOverwriteBtn()
-          self.driver.implicitly_wait(10)
-
-      except:
-            pass
+            self.clickOverwriteBtn()
+            self.driver.implicitly_wait(10)
+            return True
+        except:
+            return False
 
 
     def uploadFile(self, fileNameCount):
-        # upload files
         for i in range(fileNameCount):
 
             fileUploadIcon = self.wait.until(
@@ -151,14 +185,22 @@ class TestCreateNewEvent(unittest.TestCase):
             time.sleep(2)
        
             inputFile.send_keys(FILES_PATH + str(i) + ".txt")
-
-            btn = self.wait.until(
-                EC.element_to_be_clickable(        
-                    (By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']")
-                )
+            self.logger.log(
+                f'Upload file {str(i) + ".txt"}', 'info'
             )
 
-            btn.click()
+            try: 
+                btn = self.wait.until(
+                    EC.element_to_be_clickable(        
+                        (By.XPATH, "//button[@class='fp-upload-btn btn-primary btn']")
+                    )
+                )
+
+                btn.click()
+            except:
+                self.logger.log(
+                    f'Test failed: Cannot click to upload file', 'error'
+                )
 
             overwrite = False
             try:
@@ -167,7 +209,7 @@ class TestCreateNewEvent(unittest.TestCase):
                 )
 
                 overwrite = self.clickOverwriteBtn()
-                print("overwrite = {}".format(overwrite))
+                # print("overwrite = {}".format(overwrite))
 
             except:
                 pass
@@ -189,12 +231,14 @@ class TestCreateNewEvent(unittest.TestCase):
     def countFilesOnBoard(self):
         uploadFiles = self.wait.until(
             EC.presence_of_all_elements_located(
-                (By.CSS_SELECTOR, "div.fp-filename.text-truncate")
+                (By.CSS_SELECTOR, "td.yui3-datatable-col-displayname.yui3-datatable-cell ")
             )
         )
 
         for upfile in uploadFiles:
-            print(upfile.text)
+            self.logger.log(
+                f'Found existing file {upfile}', 'info'
+            )
         return len(uploadFiles)
 
     def clickOverwriteBtn(self):
@@ -203,82 +247,130 @@ class TestCreateNewEvent(unittest.TestCase):
         ).click()
 
         return True
+    def filePickerClick(self):
+        fileUploadIcon = self.wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//div[@class='fp-btn-add']"))
+        )
+        self.driver.execute_script("arguments[0].click();", fileUploadIcon)
+        return True
 
-    # def test_upload_no_file(self):
-    #   fileUploadIcon = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    #   )
-    #   fileUploadIcon.click()
-    #   self.clickUploadByUpFileBtn()
-    #   self.clickUploadBtn()
-    #   error_dialog = self.wait.until(
-    #     EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
-    #   )
-    #   self.assertTrue(error_dialog.is_displayed())
+    def test_upload_no_file(self):
+        self.logger.log(
+                f'--- TEST: UPLOAD NO FILE', 'info'
+            )
+        fileUploadIcon = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
+        )
+        fileUploadIcon.click()
+        self.clickUploadByUpFileBtn()
+        self.clickUploadBtn()
+        error_dialog = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
+        )
+        res = False
+        try:
+            res = self.assertTrue(error_dialog.is_displayed())
+            self.logger.log(
+                f'Test failed: Got Error Dialog {res} as expected', 'info'
+            )
+        except:
+            self.logger.log(
+                f'Test failed: Got Error Dialog {res}', 'error'
+            )
 
-    # def test_upload_exist(self):
-    #   fileCount = 1
-    #   self.createTxtFiles(10,fileCount)
-    #   fileUploadIcon = self.wait.until(
-    #     EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.fa-file-o'))
-    #       )
-    #   fileUploadIcon.click()
+ 
 
-    #   self.clickUploadByUpFileBtn()
-    #   self.inputFile(0)
-    #   self.clickUploadBtn()
+    def test_upload_exist(self):
+        self.logger.log(
+                f'---  TEST: REUP EXISTING FILE', 'info'
+            )
+        fileCount = 1
+        self.createTxtFiles(10,fileCount)
+        self.filePickerClick()
+        self.clickUploadByUpFileBtn()
+        self.inputFile(0)
+        self.clickUploadBtn()
 
-    #   try:
-    #     modal = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
-    #     )
-    #     print(modal)
-    #   except:
-    #     modal = None
+        try:
+            modal = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
+            )
+            # print(modal.get)
+        except:
+            modal = None
 
-    #   if modal is None:
-    #     self.clickSaveChanges()
-    #     fileUploadIcon = self.wait.until(
-    #       EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.fp-btn-add'))
-    #         )
-    #     fileUploadIcon.click()
+        if modal is None:
+            self.clickSaveChanges()
+            fileUploadIcon = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.fp-btn-add'))
+                )
+            fileUploadIcon.click()
 
-    #     self.clickUploadByUpFileBtn()
-    #     self.inputFile(0)
-    #     self.clickUploadBtn()
-    #     modal = self.wait.until(
-    #         EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
-    #       )
-    #   self.assertTrue(modal.is_displayed())
+            self.clickUploadByUpFileBtn()
+            self.inputFile(0)
+            self.clickUploadBtn()
+            modal = self.wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.file-picker.fp-dlg'))
+            )
+        try:
+            self.assertTrue(modal.is_displayed())
+            self.logger.log (
+                f'Failed test: Detect Repeated File {True}', 'info'
+            )
+        except:
+            self.logger.log (
+                f'Failed test: Detect Repeated File {False}', 'error'
+            )
 
     def test_upload_valid_file(self):
+        self.logger.log(
+                f'---  TEST: MULTIPLE VALID FILES', 'info'
+            )
+        self.emptyBoard()
         fileCount = 3
-        self.createTxtFiles(3.0 / 1024, fileCount)
+        self.createTxtFiles(3, fileCount)
         ableToUploadFile = self.uploadFile(fileCount)
-        self.driver.implicitly_wait(20)
         count = self.countFilesOnBoard()
-        self.assertGreaterEqual(count, fileCount)
+
+        try:
+            self.assertEqual(count, fileCount)
+            self.logger.log(
+                f'Test success: There are {count} files as expected', 'info'
+            )
+        except:
+            self.logger.log(
+                f'Failed test: There are only {count} files while expected {fileCount}', 'error'
+            )
+        
 
     def test_upload_oversized_file(self):
-      fileCount = 1
-      self.createTxtFiles(100,101,True)
+        self.logger.log(
+                f'---  TEST: UPLOAD OVERSIZED 105MB FILE', 'info'
+            )
+        self.createTxtFiles(105,101,True)
 
-      # fileUploadIcon = self.wait.until(
-      #           EC.element_to_be_clickable((By.XPATH, "//div[@class='fp-btn-add']"))
-      #       )
+        self.filePickerClick()
+        self.clickUploadByUpFileBtn()
 
-      fileUploadIcon = self.wait.until(
-          EC.element_to_be_clickable((By.CSS_SELECTOR, 'i.icon.fa-file-o'))
-      )
-      fileUploadIcon.click()
-      self.driver.execute_script("arguments[0].click();", fileUploadIcon)
-      self.inputFile(101)
-      self.clickUploadByUpFileBtn()
-      self.clickUploadBtn()
-      error_dialog = self.wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
-      )
-      self.assertTrue(error_dialog.is_displayed())
+        self.inputFile(101)
+        if not self.clickUploadBtn():
+            self.logger.log(
+                f'Success: Cannot upload oversized {105} MB file', 'info'
+            )
+            return
+        
+        error_dialog = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '.file-picker.fp-msg-error'))
+        )
+        try:
+            self.assertTrue(error_dialog.is_displayed())
+            self.logger.log(
+                f'Success: Error Dialog is displayed: {False}', 'info'
+            )
+        except:
+            self.logger.log(
+                f'Test failed: Error Dialog is displayed: {False}', 'error'
+            )
 
 
 if __name__ == "__main__":

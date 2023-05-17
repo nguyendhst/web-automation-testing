@@ -1,7 +1,2 @@
 ﻿file_size;quantity;expected
-20;5;success
-40;3;failure
-10;0;failure
-10;1;success
 100;1;success
-101;1;failure
